@@ -248,17 +248,6 @@ const GetMethodSection = () => {
 }`}
             </Typography>
           </Paper>
-          <Typography variant="h6" gutterBottom color={theme.palette.text.primary}>
-            4. Failed response
-          </Typography>
-          <Paper elevation={1} sx={{ p: 2, mb: 3, backgroundColor: isDarkMode ? theme.palette.grey[800] : '#f1f4f8', borderRadius: '8px', borderLeft: '4px solid #f44336' }}>
-            <Typography variant="body2" component="pre" sx={{ fontFamily: 'monospace', color: theme.palette.text.primary }}>
-              {`{
-  "success": false,
-  "message": "<REASON>"
-}`}
-            </Typography>
-          </Paper>
         </>
       ),
 

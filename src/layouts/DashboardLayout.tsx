@@ -389,6 +389,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         label="Panel de control"
                     />
                     <NavItem
+                        to="users"
+                        icon={<PersonIcon />}
+                        label="Usuarios"
+                    />
+                    <NavItem
                         to="inbox"
                         icon={<ChatIcon />}
                         label="Bandeja de entrada"
