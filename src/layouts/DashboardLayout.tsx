@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { db } from "../db";
 import config from "../config";
 import { Outlet, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import {
@@ -228,14 +229,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     const toggleDrawer = () => setOpen(!open);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         handleMenuClose();
         localStorage.removeItem('token');
-        navigate('/login');
+        localStorage.removeItem('role');
+        localStorage.removeItem('sessionId');
+        try {
+            await db.chats.clear();
+            await db.messages.clear();
+        } catch (e) {
+            console.error("Error limpiando caché local:", e);
+        }
+        navigate(isAdmin ? '/admin' : '/login');
     };
     const token = localStorage.getItem('token');
     if (!token) {
         return <Navigate to="/login" replace />;
+    }
+    let isAdmin = false;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        isAdmin = payload.role === 'admin';
+    } catch (e) {
+        console.error("Error leyendo el rol del token:", e);
     }
 
 
@@ -336,31 +352,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         transformOrigin={{ horizontal: "right", vertical: "top" }}
                         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                     >
-                        <MenuItem component={Link} to="/panel/instances" onClick={handleMenuClose}>
+                        {!isAdmin && [
+                        <MenuItem key="ins" component={Link} to="/panel/instances" onClick={handleMenuClose}>
                             <ListItemIcon>
                                 <AdbIcon fontSize="small" />
                             </ListItemIcon>
                             Administrar instancias
-                        </MenuItem>
-                        <MenuItem onClick={handleSubscriptionClick}>
+                        </MenuItem>,
+                        <MenuItem key="sub" onClick={handleSubscriptionClick}>
                             <ListItemIcon>
                                 <PaidIcon fontSize="small" />
                             </ListItemIcon>
                             Suscripción
-                        </MenuItem>
-                        <Divider />
-                        <MenuItem onClick={handleProfileClick}>
+                        </MenuItem>,
+                        <Divider key="div" />,
+                        <MenuItem key="prof" onClick={handleProfileClick}>
                             <ListItemIcon>
                                 <PersonIcon fontSize="small" />
                             </ListItemIcon>
                             Perfil
                         </MenuItem>
-                        <MenuItem onClick={handleLogout}>
-                            <ListItemIcon>
-                                <LogoutIcon fontSize="small" />
-                            </ListItemIcon>
-                            Cerrar sesión
-                        </MenuItem>
+                    ]}
+                    <MenuItem onClick={handleLogout}>
+                        <ListItemIcon>
+                            <LogoutIcon fontSize="small" />
+                        </ListItemIcon>
+                        Cerrar sesión
+                    </MenuItem>
                     </Menu>
                 </Toolbar>
             </AppBar>
@@ -383,50 +401,56 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             >
                 <Toolbar />
                 <List>
-                    <NavItem
-                        to="dashboard"
-                        icon={<DashboardIcon />}
-                        label="Panel de control"
-                    />
-                    <NavItem
-                        to="users"
-                        icon={<PersonIcon />}
-                        label="Usuarios"
-                    />
-                    <NavItem
-                        to="inbox"
-                        icon={<ChatIcon />}
-                        label="Bandeja de entrada"
-                    />
-                    <NavItem
-                        to="calentador"
-                        icon={<ChatIcon />}
-                        label="Calentador de WhatsApp"
-                    />
-                    <NavItem
-                        to="contacts"
-                        icon={<ContactsIcon />}
-                        label="Agenda telefónica"
-                    />
-                    <NavItem
-                        to="broadcast"
-                        icon={<CampaignIcon />}
-                        label="Campañas de difusión"
-                    />
-                    <NavItem
-                        to="/panel/flows"
-                        icon={<BuildIcon />}
-                        label="Constructor de flujos"
-                    />
-                    <NavItem
-                        to="chatbot"
-                        icon={<CampaignIcon />}
-                        label="Chatbots"
-                    />
-                    <NavItem
-                        to="/panel/api"
-                        icon={<ApiIcon />}
-                        label="Acceso API" />
+                    {isAdmin ? (
+                        <NavItem
+                            to="/panel/users"
+                            icon={<PersonIcon />}
+                            label="Usuarios"
+                        />
+                    ) : (
+                        <>
+                            <NavItem
+                                to="dashboard"
+                                icon={<DashboardIcon />}
+                                label="Panel de control"
+                            />
+                            <NavItem
+                                to="inbox"
+                                icon={<ChatIcon />}
+                                label="Bandeja de entrada"
+                            />
+                            <NavItem
+                                to="calentador"
+                                icon={<ChatIcon />}
+                                label="Calentador de WhatsApp"
+                            />
+                            <NavItem
+                                to="contacts"
+                                icon={<ContactsIcon />}
+                                label="Agenda telefónica"
+                            />
+                            <NavItem
+                                to="broadcast"
+                                icon={<CampaignIcon />}
+                                label="Campañas de difusión"
+                            />
+                            <NavItem
+                                to="/panel/flows"
+                                icon={<BuildIcon />}
+                                label="Constructor de flujos"
+                            />
+                            <NavItem
+                                to="chatbot"
+                                icon={<CampaignIcon />}
+                                label="Chatbots"
+                            />
+                            <NavItem
+                                to="/panel/api"
+                                icon={<ApiIcon />}
+                                label="Acceso API"
+                            />
+                        </>
+                    )}
                 </List>
             </Drawer>
 

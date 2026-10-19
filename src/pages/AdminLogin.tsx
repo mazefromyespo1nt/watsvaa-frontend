@@ -99,6 +99,10 @@ export default function AdminLogin() {
       setSubmitting(false);
     }
   };
+const admin_login_background =
+  "repeating-linear-gradient(45deg, rgba(23, 105, 210, 0.3) 0 1px, transparent 1px 11px, rgba(37, 139, 176, 0.3) 11px 12px, transparent 12px 22px, rgba(48, 185, 139, 0.3) 22px 23px, transparent 23px 33px, rgba(62, 228, 138, 0.3) 33px 34px, transparent 34px 44px, rgba(48, 185, 139, 0.3) 44px 45px, transparent 45px 55px, rgba(37, 139, 176, 0.3) 55px 56px, transparent 56px 66px)";
+const admin_login_background_v2 =
+  "repeating-linear-gradient(60deg, transparent 0 15px, rgba(23, 105, 210, 0.22) 15px 16px, transparent 16px 30px), repeating-linear-gradient(-60deg, transparent 0 15px, rgba(62, 228, 138, 0.22) 15px 16px, transparent 16px 30px)";
 
   return (
     <Grid
@@ -107,7 +111,8 @@ export default function AdminLogin() {
       alignItems="center"
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+        backgroundColor: "#f8f9fa",
+        background: admin_login_background_v2,
         p: 2,
       }}
     >
@@ -116,14 +121,23 @@ export default function AdminLogin() {
           elevation={12}
           sx={{
             p: { xs: 3, sm: 4 },
-            borderRadius: 4,
-            borderTop: "6px solid #6366f1",
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+            borderRadius: 4
           }}
         >
           <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" mb={3}>
-            <Avatar sx={{ bgcolor: "#6366f1", width: 56, height: 56, mb: 1.5 }}>
-              <AdminIcon fontSize="large" />
-            </Avatar>
+            <Box
+                      component="img"
+                      src="src/images/wcrmlogo.png"
+                      alt="Imagen Login"
+                      sx={{
+                        width: { xs: "72px", md: "72px" },
+                        height: { xs: "72px", md: "72px" },
+                        borderRadius: 2,
+                        objectFit: "cover",
+                        mb: 1.5,
+                      }}
+                    />
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Panel Admin
             </Typography>
@@ -191,8 +205,8 @@ export default function AdminLogin() {
                 borderRadius: 3,
                 textTransform: "none",
                 fontWeight: 700,
-                bgcolor: "#6366f1",
-                "&:hover": { bgcolor: "#4f46e5" },
+                bgcolor: "#1769d2",
+                "&:hover": { bgcolor: "#1558b0" },
               }}
             >
               {submitting ? "Verificando..." : "Entrar como Administrador"}
