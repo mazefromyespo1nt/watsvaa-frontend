@@ -22,6 +22,7 @@ import InstancesPage from "./pages/InstancesPage"
 import AccountPage from "./pages/AccountPage";
 import PaySubscription from "./pages/PaySubscription";
 import Broadcast from "./pages/Broadcast";
+import AdminLogin from "./pages/AdminLogin";
 
 function App() {
   const [mode, setMode] = useState<"light" | "dark">("light");
@@ -66,6 +67,7 @@ function App() {
         />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<AdminLogin />} />
         <Route path="/register" element={<SignupForm />} />
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
         
