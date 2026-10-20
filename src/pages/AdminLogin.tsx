@@ -12,15 +12,13 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  Divider,
-  Avatar,
+  Divider
 } from "@mui/material";
 import {
   Visibility,
   VisibilityOff,
   Login as LoginIcon,
-  ArrowBack as ArrowBackIcon,
-  AdminPanelSettings as AdminIcon,
+  ArrowBack as ArrowBackIcon
 } from "@mui/icons-material";
 
 type AdminLoginForm = {
@@ -67,7 +65,6 @@ export default function AdminLogin() {
     setSubmitting(true);
 
     try {
-      // routes/admin.js espera { email, password } directo en req.body
       const response = await fetch(config.API_URL + "admin/login", {
         method: "POST",
         headers: {
@@ -99,8 +96,7 @@ export default function AdminLogin() {
       setSubmitting(false);
     }
   };
-const admin_login_background =
-  "repeating-linear-gradient(45deg, rgba(23, 105, 210, 0.3) 0 1px, transparent 1px 11px, rgba(37, 139, 176, 0.3) 11px 12px, transparent 12px 22px, rgba(48, 185, 139, 0.3) 22px 23px, transparent 23px 33px, rgba(62, 228, 138, 0.3) 33px 34px, transparent 34px 44px, rgba(48, 185, 139, 0.3) 44px 45px, transparent 45px 55px, rgba(37, 139, 176, 0.3) 55px 56px, transparent 56px 66px)";
+//const admin_login_background = "repeating-linear-gradient(45deg, rgba(23, 105, 210, 0.3) 0 1px, transparent 1px 11px, rgba(37, 139, 176, 0.3) 11px 12px, transparent 12px 22px, rgba(48, 185, 139, 0.3) 22px 23px, transparent 23px 33px, rgba(62, 228, 138, 0.3) 33px 34px, transparent 34px 44px, rgba(48, 185, 139, 0.3) 44px 45px, transparent 45px 55px, rgba(37, 139, 176, 0.3) 55px 56px, transparent 56px 66px)";
 const admin_login_background_v2 =
   "repeating-linear-gradient(60deg, transparent 0 15px, rgba(23, 105, 210, 0.22) 15px 16px, transparent 16px 30px), repeating-linear-gradient(-60deg, transparent 0 15px, rgba(62, 228, 138, 0.22) 15px 16px, transparent 16px 30px)";
 
@@ -112,7 +108,7 @@ const admin_login_background_v2 =
       sx={{
         minHeight: "100vh",
         backgroundColor: "#f8f9fa",
-        background: admin_login_background_v2,
+        backgroundImage: admin_login_background_v2,
         p: 2,
       }}
     >
