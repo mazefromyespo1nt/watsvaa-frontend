@@ -17,6 +17,7 @@ import {
   CircularProgress, 
   Alert, 
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -32,17 +33,36 @@ const useQuery = () => {
 
 const CardLogos = () => (
   <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto', alignItems: 'center' }}>
-    <Typography variant="caption" sx={{ border: '1px solid #ccc', px: 0.5, py: 0.1, borderRadius: '2px' }}>
+    <Typography variant="caption" sx={{ border: 1, borderColor: 'divider', color: 'text.primary', px: 0.5, py: 0.1, borderRadius: '2px' }}>
       VISA
     </Typography>
-    <Typography variant="caption" sx={{ border: '1px solid #ccc', px: 0.5, py: 0.1, borderRadius: '2px', bgcolor: '#003087', color: 'white' }}>
+    <Typography variant="caption" sx={{ border: 1, borderColor: 'divider', px: 0.5, py: 0.1, borderRadius: '2px', bgcolor: '#003087', color: 'white' }}>
       MC
     </Typography>
-    <Typography variant="caption" sx={{ border: '1px solid #ccc', px: 0.5, py: 0.1, borderRadius: '2px', bgcolor: '#005ea6', color: 'white' }}>
+    <Typography variant="caption" sx={{ border: 1, borderColor: 'divider', px: 0.5, py: 0.1, borderRadius: '2px', bgcolor: '#005ea6', color: 'white' }}>
       AMEX
     </Typography>
   </Box>
 );
+
+// Estilos de cada recuadro de método de pago.
+// Usan los colores del tema de MUI, así se ven bien en modo claro y oscuro.
+const methodBoxSx = (selected: boolean) => ({
+  border: 1,
+  borderColor: selected ? 'primary.main' : 'divider',
+  borderRadius: 1,
+  p: 2,
+  mb: 2,
+  color: 'text.primary',
+  bgcolor: (theme: any) =>
+    selected ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+  cursor: 'pointer',
+  transition: 'border-color 0.3s, background-color 0.3s',
+  '& input::placeholder': {
+    color: 'text.secondary',
+    opacity: 1,
+  },
+});
 
 
 const PaySubscription = () => {
@@ -167,22 +187,13 @@ const PaySubscription = () => {
         >
           <Box
             onClick={() => setPaymentMethod('creditCard')}
-            sx={{
-              border: 1,
-              borderColor: paymentMethod === 'creditCard' ? 'primary.main' : 'divider',
-              borderRadius: 1,
-              p: 2,
-              mb: 2,
-              bgcolor: paymentMethod === 'creditCard' ? '#f5f5f5' : 'white', 
-              cursor: 'pointer',
-              transition: 'border-color 0.3s',
-            }}
+            sx={methodBoxSx(paymentMethod === 'creditCard')}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FormControlLabel
                 value="creditCard"
                 control={<Radio size="small" />}
-                label={<Typography variant="body1" sx={{ fontWeight: 'bold' }}>Tarjeta de crédito</Typography>}
+                label={<Typography variant="body1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Tarjeta de crédito</Typography>}
                 sx={{ m: 0, flexGrow: 1 }}
               />
               <CardLogos />
@@ -274,22 +285,13 @@ const PaySubscription = () => {
           <Divider sx={{ my: 1 }} />
           <Box
             onClick={() => setPaymentMethod('paypal')}
-            sx={{
-              border: 1,
-              borderColor: paymentMethod === 'paypal' ? 'primary.main' : 'divider',
-              borderRadius: 1,
-              p: 2,
-              mb: 2,
-              bgcolor: paymentMethod === 'paypal' ? '#f5f5f5' : 'white',
-              cursor: 'pointer',
-              transition: 'border-color 0.3s',
-            }}
+            sx={methodBoxSx(paymentMethod === 'paypal')}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FormControlLabel
                 value="paypal"
                 control={<Radio size="small" />}
-                label={<Typography variant="body1" sx={{ fontWeight: 'bold' }}>PayPal</Typography>}
+                label={<Typography variant="body1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>PayPal</Typography>}
                 sx={{ m: 0, flexGrow: 1 }}
               />
               <Box sx={{
@@ -319,12 +321,13 @@ const PaySubscription = () => {
                     sx={{
                         width: '100%',
                         bgcolor: '#003087',
+                        color: '#fff',
                         '&:hover': {
                             bgcolor: '#005ea6',
                         },
-                        '&:disabled': {
-                            bgcolor: '#ccc',
-                            color: '#666'
+                        '&.Mui-disabled': {
+                            bgcolor: 'action.disabledBackground',
+                            color: 'text.secondary'
                         }
                     }}
                 >
@@ -341,7 +344,16 @@ const PaySubscription = () => {
               size="large"
               disabled={!isButtonEnabled || paymentSuccess}
               onClick={handleCheckout}
-              sx={{ width: '100%', mt: 4 }}
+              sx={{
+                width: '100%',
+                mt: 4,
+                '&.Mui-disabled': {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'text.secondary',
+                  border: 1,
+                  borderColor: 'divider',
+                },
+              }}
             >
               Proceder al Pago
             </Button>

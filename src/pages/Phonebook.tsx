@@ -16,6 +16,7 @@ import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined"
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined"
 import phonebookImg from "../images/contact.svg"
 import config from "../config.json"
+import { useConfirm } from "../components/ConfirmProvider"
 
 const fechaHora = new Date().toLocaleString("es-MX", { hour12: false });
 
@@ -468,6 +469,7 @@ const EditContactDialog: React.FC<EditContactDialogProps> = ({ open, contact, on
 // =================================================================
 
 const Phonebook: React.FC = () => {
+  const confirm = useConfirm()
   const [agendas, setAgendas] = useState<Agenda[]>([])
   const [contacts, setContacts] = useState<Contact[]>([])
   const [newAgendaTitle, setNewAgendaTitle] = useState("")
@@ -647,7 +649,17 @@ const applyRename = useCallback(async () => {
   }, [renameTarget, renameValue, showSuccess, showError, fetchAgendas]);
 
   const removeAgenda = useCallback(async (agenda: Agenda) => {
-    if (!window.confirm(`¿Eliminar la agenda "${agenda.name}"?`)) return;
+    const confirmed = await confirm({
+      title: "Eliminar agenda",
+      message: (
+        <>
+          Se eliminará la agenda <strong>“{agenda.name}”</strong>. Esta acción no se puede deshacer.
+        </>
+      ),
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       await apiService.deletePhonebook(agenda.rawId);
       showSuccess("Agenda eliminada.");
@@ -655,10 +667,20 @@ const applyRename = useCallback(async () => {
     } catch (error: any) {
       showError(`Error al eliminar agenda: ${error.message}`);
     }
-  }, [showSuccess, showError, fetchAgendas]);
+  }, [confirm, showSuccess, showError, fetchAgendas]);
 
   const deleteSingleContact = useCallback(async (contact: Contact) => {
-    if (!window.confirm(`¿Eliminar el contacto ${contact.contactName}?`)) return;
+    const confirmed = await confirm({
+      title: "Eliminar contacto",
+      message: (
+        <>
+          Se eliminará el contacto <strong>“{contact.contactName}”</strong>. Esta acción no se puede deshacer.
+        </>
+      ),
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       await apiService.deleteContacts([Number(contact.id)]);
       showSuccess("Contacto eliminado.");
@@ -666,11 +688,20 @@ const applyRename = useCallback(async () => {
     } catch (error: any) {
       showError(`Error al eliminar contacto: ${error.message}`);
     }
-  }, [selectedAgenda, showSuccess, showError, fetchContacts]);
+  }, [confirm, selectedAgenda, showSuccess, showError, fetchContacts]);
 
   const deleteSelectedContacts = useCallback(async () => {
     if (selectedIds.size === 0) return;
-    if (!window.confirm("¿Eliminar los contactos seleccionados?")) return;
+    const confirmed = await confirm({
+      title: "Eliminar contactos",
+      message:
+        selectedIds.size === 1
+          ? "Se eliminará el contacto seleccionado. Esta acción no se puede deshacer."
+          : `Se eliminarán ${selectedIds.size} contactos seleccionados. Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       const idsToDelete = Array.from(selectedIds).map(id => Number(id));
       await apiService.deleteContacts(idsToDelete);
@@ -682,7 +713,7 @@ const applyRename = useCallback(async () => {
     } catch (error: any) {
       showError(`Error al eliminar contactos: ${error.message}`);
     }
-  }, [selectedIds, selectedAgenda, showSuccess, showError, fetchContacts]);
+  }, [confirm, selectedIds, selectedAgenda, showSuccess, showError, fetchContacts]);
 
   const onSelectAgenda = useCallback(async (ag: Agenda) => {
     setSelectedAgenda(ag);
@@ -903,7 +934,7 @@ const applyRename = useCallback(async () => {
         {selectedAgenda ? (
             <>
                 {/* Cabecera de la Agenda Seleccionada con Acciones Contextuales */}
-                <Toolbar sx={{ gap: 1, flexWrap: 'wrap', borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', py: 1 }}>
+                <Toolbar sx={{ gap: 1, flexWrap: 'wrap', borderBottom: 1, borderColor: 'divider', bgcolor: 'action.hover', py: 1 }}>
                     <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="h5" fontWeight="bold">{selectedAgenda.name}</Typography>
                         <Tooltip title="Renombrar Agenda">

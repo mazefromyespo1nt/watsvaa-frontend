@@ -1,6 +1,6 @@
 import * as React from "react";
 import config from '../../config.json';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import {
   Box,
@@ -33,19 +33,34 @@ const validateEmail = (value: string) =>
   /^(?:[a-zA-Z0-9_\'^&/+{}!#$%*?|~.-]+)@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(value);
 
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Datos que llegan desde el registro (si el usuario viene de ahí)
+  const fromSignup = location.state as { registered?: boolean; email?: string } | null;
+
   const [values, setValues] = React.useState<LoginForm>({
-    email: "",
+    email: fromSignup?.email || "",
     password: "",
     remember: true,
   });
-  const navigate = useNavigate();
   
   const [showPassword, setShowPassword] = React.useState(false);
   const [errors, setErrors] = React.useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [alert, setAlert] = React.useState<{ type: "success" | "error"; msg: string } | null>(
-    null
+    fromSignup?.registered
+      ? { type: "success", msg: "Cuenta creada correctamente. Inicia sesión para entrar." }
+      : null
   );
+
+  // Limpia el estado del historial para que el aviso no reaparezca al recargar
+  React.useEffect(() => {
+    if (fromSignup?.registered) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onChange = (field: keyof LoginForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = field === "remember" ? e.target.checked : e.target.value;
@@ -204,7 +219,7 @@ export default function Login() {
               margin="normal"
               fullWidth
               autoComplete="email"
-              autoFocus
+              autoFocus={!values.email}
             />
 
               <TextField
@@ -217,6 +232,7 @@ export default function Login() {
                 margin="normal"
                 fullWidth
                 autoComplete="current-password"
+                autoFocus={Boolean(values.email)}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">

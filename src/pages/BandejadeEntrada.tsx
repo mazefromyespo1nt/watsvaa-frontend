@@ -24,6 +24,7 @@ import { io, Socket } from "socket.io-client";
 import welcomeCats from "../images/no-chat-found.svg";
 import { Chat, Message } from '../types';
 import config from "../config.json";
+import { useNotify } from "../components/NotificationProvider";
 import { db } from '../db';
 import ImagePreviewModal from './ImagePreviewModal';
 import notificationSound from '../notification/interface-124464.mp3';
@@ -543,6 +544,7 @@ const formatChatTimestamp = (timestampInMs: number): string => {
 // ======================= COMPONENTE PRINCIPAL ==========================
 const BandejadeEntrada: React.FC = () => {
     const theme = useTheme();
+    const notify = useNotify();
     const [chats, setChats] = useState<Chat[]>([]);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const [userInstances, setUserInstances] = useState<any[]>([]); // Aquí almacenamos las instancias del usuario
@@ -901,7 +903,7 @@ const BandejadeEntrada: React.FC = () => {
             if (!data.success) { throw new Error(data.msg || "El backend indicó un error al enviar el mensaje."); }
         } catch (err: any) {
             console.error("Error al enviar mensaje:", err);
-            alert(`No se pudo enviar el mensaje: ${err.message}`);
+            notify.error(`No se pudo enviar el mensaje: ${err.message}`);
         }
     };
     
@@ -940,7 +942,7 @@ const BandejadeEntrada: React.FC = () => {
 
     const handleSendMedia = async (file: File, caption: string = '') => {
         if (!selectedChat || !instanceId) {
-            alert('Selecciona un chat y asegúrate que la instancia esté disponible.');
+            notify.warning('Selecciona un chat y asegúrate que la instancia esté disponible.');
             return;
         }
         
@@ -1002,7 +1004,7 @@ const BandejadeEntrada: React.FC = () => {
 
         } catch (error: any) {
             console.error("Fallo al enviar media:", error);
-            alert(`No se pudo enviar el archivo: ${error.message}`);
+            notify.error(`No se pudo enviar el archivo: ${error.message}`);
             await db.messages.update(tempId, { status: 'error' });
             setMessages(prev => prev.map(m => m.msgId === tempId ? { ...m, status: 'error' } : m));
         }
@@ -1026,7 +1028,7 @@ const BandejadeEntrada: React.FC = () => {
             setSelectedChat(revertedChat);
             setChats(prevChats => prevChats.map(c => c.id === selectedChat.id ? revertedChat : c));
             await db.chats.update(selectedChat.jid, { chatStatus: originalStatus });
-            alert("No se pudo actualizar el estado del chat. Por favor, inténtalo de nuevo.");
+            notify.error("No se pudo actualizar el estado del chat. Por favor, inténtalo de nuevo.");
         }
     };
     

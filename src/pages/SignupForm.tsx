@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -40,6 +40,7 @@ interface FormDataState {
 
 const SignupForm: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<FormDataState>({
     name: '',
@@ -134,21 +135,14 @@ const SignupForm: React.FC = () => {
 
     // === Manejo del response del backend existente ===
     if (response.ok && (data.success || data.estatus)) {
-      setMessage({ 
-        text: data.message || data.msg || 'Registro completado correctamente.', 
-        type: 'success' 
-      });
-
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        mobile: '',
-        acceptPolicy: false,
-      });
-
+      // Registro correcto: se manda directo al login.
+      // Se pasa el correo y un aviso para que el login lo muestre.
+      // La contraseña nunca se envía por aquí.
       setErrors({});
+      navigate('/login', {
+        state: { registered: true, email: formData.email },
+      });
+      return;
     } else {
       setMessage({ 
         text: data.message || data.msg || 'Error al registrar el usuario.', 

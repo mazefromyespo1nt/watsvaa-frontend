@@ -60,6 +60,8 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Draggable from "react-draggable";
 import flo from "../images/flo.svg";
 import config from "../config.json";
+import { useConfirm } from "../components/ConfirmProvider";
+import { useNotify } from "../components/NotificationProvider";
 
 const fechaHora = new Date().toLocaleString("es-MX", { hour12: false });
 
@@ -298,6 +300,8 @@ const MINIMAP_HEIGHT = 150;
 
 const FlowBuilder: React.FC = () => {
   const theme = useTheme();
+  const confirm = useConfirm();
+  const notify = useNotify();
 
   const [title, setTitle] = useState("Untitled");
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -553,7 +557,7 @@ const loadFlows = async () => {
 
   } catch (err: any) {
     console.error("Error cargando flujos:", err);
-    window.alert(err.message || "No se pudo cargar la lista de flujos");
+    notify.error(err.message || "No se pudo cargar la lista de flujos");
   }
 };
 
@@ -567,7 +571,7 @@ const loadTemplates = async () => {
 
   } catch (err: any) {
     console.error("Error cargando plantillas:", err);
-    window.alert(err.message || "No se pudieron cargar las plantillas");
+    notify.error(err.message || "No se pudieron cargar las plantillas");
   }
 };
 
@@ -628,7 +632,7 @@ const handleLoadFlow = async (flowId: string, flowTitle: string) => {
         setMainView("canvas");
     } catch (err: any) {
         console.error("Error cargando flujo:", err);
-        window.alert(err.message || "No se pudo cargar el flujo");
+        notify.error(err.message || "No se pudo cargar el flujo");
     }
 };
 
@@ -649,7 +653,7 @@ const handleLocationClick = (lat?: string, lng?: string) => {
 
 const handleSaveFlowToServer = async () => {
     try {
-        if (!title.trim()) return window.alert("Por favor, dale un título al flujo.");
+        if (!title.trim()) return notify.warning("Por favor, dale un título al flujo.");
 
         const mappedNodes = blocks.map((b) => {
             const stateData = { ...b.data };
@@ -766,38 +770,50 @@ const handleSaveFlowToServer = async () => {
         
         await apiService.addFlow(payload);
 
-        window.alert("Flujo guardado en servidor correctamente");
+        notify.success("Flujo guardado en servidor correctamente");
         setCurrentFlowId(flowId);
         await loadFlows();
 
     } catch (err: any) {
         console.error("Error guardando flujo:", err);
-        window.alert(err.message || "No se pudo guardar el flujo");
+        notify.error(err.message || "No se pudo guardar el flujo");
     }
 };
   const handleDeleteFlow = async (flowId: string | undefined) => {
     if (!flowId) return;
-    if (!window.confirm("¿Estás seguro de que quieres eliminar este flujo?")) return;
+    const confirmed = await confirm({
+      title: "Eliminar flujo",
+      message: "Se eliminará este flujo. Esta acción no se puede deshacer.",
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       await apiService.delFlow(flowId);
-      window.alert("Flujo eliminado correctamente");
+      notify.success("Flujo eliminado correctamente");
       await loadFlows();
       if (currentFlowId === flowId) handleNewFlow();
     } catch (err: any) {
       console.error("Error al eliminar flujo:", err);
-      window.alert(err.message || "No se pudo eliminar el flujo");
+      notify.error(err.message || "No se pudo eliminar el flujo");
     }
   };
 
   const handleDeleteTemplate = async (id: number) => {
-    if (!window.confirm("¿Está seguro de eliminar esta plantilla?")) return;
+    const confirmed = await confirm({
+      title: "Eliminar plantilla",
+      message: "Se eliminará esta plantilla. Esta acción no se puede deshacer.",
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       await templateService.delTemplate(id);
-      window.alert("Plantilla eliminada.");
+      notify.success("Plantilla eliminada.");
       await loadTemplates();
     } catch (err: any) {
       console.error("Error eliminando plantilla:", err);
-      window.alert(err.message || "No se pudo eliminar la plantilla");
+      notify.error(err.message || "No se pudo eliminar la plantilla");
     }
   };
 
@@ -894,7 +910,7 @@ setUploadedFileName(block.data?.filename ?? null);
 
     } catch (err: any) {
     console.error("Error en la subida:", err);
-    window.alert(err.message || "No se pudo subir el archivo.");
+    notify.error(err.message || "No se pudo subir el archivo.");
 
     } finally {
     setIsUploading(false);
@@ -1059,10 +1075,10 @@ data.filename = uploadedFileName;
       await templateService.addTemplate(payload);
       await loadTemplates();
 
-      window.alert("Plantilla guardada correctamente");
+      notify.success("Plantilla guardada correctamente");
     } catch (err: any) {
       console.error(err);
-      window.alert(err.message || "No se pudo guardar la plantilla");
+      notify.error(err.message || "No se pudo guardar la plantilla");
     }
   };
 
@@ -1082,7 +1098,7 @@ data.filename = uploadedFileName;
       setTimeout(() => computeRects(), 40);
     } catch (err: any) {
       console.error(err);
-      window.alert("No se pudo insertar la plantilla");
+      notify.error("No se pudo insertar la plantilla");
     }
   };
 
@@ -1463,26 +1479,34 @@ data.filename = uploadedFileName;
         <List>
           {flows.map((flow) => (
             <ListItem
-             key={flow.id}
-              secondaryAction={
-                <Stack direction="row" spacing={1}>
-                  <Tooltip title="Editar este flujo" arrow>
-                    <IconButton edge="end" color="primary" onClick={() => handleLoadFlow(flow.flow_id!, flow.name)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Eliminar flujo" arrow>
-                    <IconButton edge="end" color="error" onClick={() => handleDeleteFlow(flow.flow_id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-              }
+              key={flow.id}
+              sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 36, flexShrink: 0 }}>
                 <DescriptionIcon />
               </ListItemIcon>
-              <ListItemText primary={flow.name} />
+
+              {/* El texto ocupa el espacio disponible y salta de línea si el nombre es largo */}
+              <ListItemText
+                primary={flow.name}
+                title={flow.name}
+                sx={{ flex: 1, minWidth: 0, m: 0 }}
+                primaryTypographyProps={{ sx: { overflowWrap: "anywhere" } }}
+              />
+
+              {/* Los botones nunca se encogen ni se mueven, sin importar el largo del nombre */}
+              <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                <Tooltip title="Editar este flujo" arrow>
+                  <IconButton color="primary" onClick={() => handleLoadFlow(flow.flow_id!, flow.name)}>
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Eliminar flujo" arrow>
+                  <IconButton color="error" onClick={() => handleDeleteFlow(flow.flow_id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </ListItem>
           ))}
           {flows.length === 0 && (

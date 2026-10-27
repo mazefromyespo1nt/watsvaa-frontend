@@ -25,6 +25,8 @@ import {
   Alert
 } from "@mui/material";
 import config from "../config.json";
+import { useConfirm } from "../components/ConfirmProvider";
+import { useNotify } from "../components/NotificationProvider";
 
 const fechaHora = new Date().toLocaleString("es-MX", { hour12: false });
 
@@ -52,6 +54,9 @@ interface Chatbot {
 }
 
 export default function Chatbot() {
+  const confirm = useConfirm();
+  const notify = useNotify();
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +70,6 @@ export default function Chatbot() {
 
   const [showAddChatbot, setShowAddChatbot] = useState(false);
   const [editChatbot, setEditChatbot] = useState<Chatbot | null>(null);
-  const [deleteChatbotId, setDeleteChatbotId] = useState<number | null>(null);
 
   const [titulo, setTitulo] = useState("");
   const [paraTodos, setParaTodos] = useState(true);
@@ -194,8 +198,19 @@ try {
 
   };
 
-const handleDeleteChatbot = async () => {
-  if (deleteChatbotId === null) return;
+const handleDeleteChatbot = async (bot: Chatbot) => {
+  const confirmed = await confirm({
+    title: "Eliminar chatbot",
+    message: (
+      <>
+        Se eliminará el chatbot <strong>“{bot.title}”</strong>. Esta acción no se puede deshacer.
+      </>
+    ),
+    confirmText: "Eliminar",
+    severity: "danger",
+  });
+
+  if (!confirmed) return;
 
   try {
     const payload = {
@@ -204,18 +219,19 @@ const handleDeleteChatbot = async () => {
       accion: "Eliminar chatbot",
       data: {
         payload: {
-          id: deleteChatbotId
+          id: bot.id
         }
       }
     };
 
     await apiCall("chatbot/del_bot", "POST", payload);
 
-    setChatbots(prev => prev.filter(c => c.id !== deleteChatbotId));
-    setDeleteChatbotId(null);
+    setChatbots(prev => prev.filter(c => c.id !== bot.id));
+    notify.success("Chatbot eliminado correctamente.");
 
   } catch (err) {
     console.error(err);
+    notify.error("No se pudo eliminar el chatbot. Intenta de nuevo.");
   }
 };
 
@@ -402,7 +418,7 @@ const handleToggleChatbotStatus = async (bot: Chatbot) => {
                             <Pencil size={16} />
                           </IconButton>
 
-                          <IconButton size="small" color="error" onClick={() => setDeleteChatbotId(bot.id)}>
+                          <IconButton size="small" color="error" aria-label="Eliminar chatbot" onClick={() => handleDeleteChatbot(bot)}>
                             <Trash2 size={16} />
                           </IconButton>
                         </TableCell>

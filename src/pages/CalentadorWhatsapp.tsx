@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import config from "../config";
+import { useNotify } from "../components/NotificationProvider";
 import {
     Box,
     Button,
@@ -49,6 +50,7 @@ interface ActivarCalentadorContentProps {
 }
 
 const ActivarCalentadorContent: React.FC<ActivarCalentadorContentProps> = ({ isWarmerActive, setIsWarmerActive, fetchMyWarmer }) => {
+    const notify = useNotify();
 
     const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
     const [instances, setInstances] = useState<Instance[]>([]);
@@ -154,7 +156,7 @@ const ActivarCalentadorContent: React.FC<ActivarCalentadorContentProps> = ({ isW
     const handleWarmerToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newActiveState = event.target.checked;
         if (newActiveState && selectedInstances.length < 2) {
-            alert("Seleccione al menos 2 instancias para activar el calentador");
+            notify.warning("Seleccione al menos 2 instancias para activar el calentador");
             return;
         }
         

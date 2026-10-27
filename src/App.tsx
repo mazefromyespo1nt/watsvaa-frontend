@@ -10,6 +10,8 @@ import Phonebook from "./pages/Phonebook";
 import RecuperarContrasena from "./pages/RecuperarContrasena"; 
 import Login from "./pages/Login";
 import WelcomeCard from "./components/WelcomeCard";
+import ConfirmProvider from "./components/ConfirmProvider";
+import NotificationProvider from "./components/NotificationProvider";
 import baseTheme from "./theme";
 import BandejadeEntrada from "./pages/BandejadeEntrada";
 import CalentadorWhatsapp from "./pages/CalentadorWhatsapp";
@@ -56,42 +58,46 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <LandingLayout onToggleTheme={toggleMode} mode={mode}>
-              <WelcomeCard />
-            </LandingLayout>
-          }
-        />
+      <NotificationProvider>
+        <ConfirmProvider>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <LandingLayout onToggleTheme={toggleMode} mode={mode}>
+                  <WelcomeCard />
+                </LandingLayout>
+              }
+            />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/register" element={<SignupForm />} />
-        <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
-        
-        <Route
-          path="/panel/*"
-          element={<DashboardLayout onToggleTheme={toggleMode} mode={mode} />}
-        >
-          <Route path="inbox" element={<BandejadeEntrada />} />
-          <Route path="calentador" element={<CalentadorWhatsapp />} />
-          <Route path="contacts" element={<Phonebook />} />
-          <Route path="broadcast" element={<Broadcast />} />
-          <Route path="dashboard" element={<PanelControl />} />
-          <Route path="users" element={<Users />} />
-          <Route path="chatbot" element={<Chatbot />} />
-          <Route path="api" element={<Api />} />
-          <Route path="flows" element={<ConstructorFlujo />} />
-          <Route path="instances" element={<InstancesPage />} />
-          <Route path="account" element={<AccountPage />} />
-          <Route path="pago" element={<PaySubscription/>} />
-        
-        </Route>
-      </Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/register" element={<SignupForm />} />
+            <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+            
+            <Route
+              path="/panel/*"
+              element={<DashboardLayout onToggleTheme={toggleMode} mode={mode} />}
+            >
+              <Route path="inbox" element={<BandejadeEntrada />} />
+              <Route path="calentador" element={<CalentadorWhatsapp />} />
+              <Route path="contacts" element={<Phonebook />} />
+              <Route path="broadcast" element={<Broadcast />} />
+              <Route path="dashboard" element={<PanelControl />} />
+              <Route path="users" element={<Users />} />
+              <Route path="chatbot" element={<Chatbot />} />
+              <Route path="api" element={<Api />} />
+              <Route path="flows" element={<ConstructorFlujo />} />
+              <Route path="instances" element={<InstancesPage />} />
+              <Route path="account" element={<AccountPage />} />
+              <Route path="pago" element={<PaySubscription/>} />
+            
+            </Route>
+          </Routes>
+        </ConfirmProvider>
+      </NotificationProvider>
     </ThemeProvider>
   );
 }
 
-export default App; 
+export default App;

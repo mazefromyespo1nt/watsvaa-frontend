@@ -24,6 +24,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonIcon from '@mui/icons-material/Person';
 import Badge from '@mui/material/Badge';
+import { useConfirm } from '../components/ConfirmProvider';
+import { useNotify } from '../components/NotificationProvider';
 
 const fechaHora = new Date().toLocaleString("es-MX", { hour12: false });
 
@@ -61,6 +63,9 @@ interface StatusResponse {
 const initialInstances: Instance[] = [];
 
 const InstancesPage = () => {
+    const confirm = useConfirm();
+    const notify = useNotify();
+
     const [instances, setInstances] = React.useState<Instance[]>(initialInstances);
     const [openDialog, setOpenDialog] = React.useState(false);
 
@@ -321,43 +326,60 @@ const fetchQrCode = async (payload: { title: string; syncMax: boolean }) => {
     
     const handleCopyId = (id: string) => {
         navigator.clipboard.writeText(id);
-        alert(`ID "${id}" copiado al portapapeles.`);
+        notify.success('ID copiado al portapapeles.');
     };
 
     const handleDeleteInstance = async (id: string) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar esta instancia?`)) {
-            try {
-                const response = await fetch(config.API_URL + '/session/del_ins', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + localStorage.getItem('token'),
-                },
-                body: JSON.stringify({
-                    fecha: fechaHora,
-                    auth: localStorage.getItem("token") || "",
-                    accion: "Eliminar instancia",
-                    data: {
-                        id: id
-                    }
-                }),
-            });
+        const instanceName = instances.find((inst) => inst.id === id)?.name;
 
+        const confirmed = await confirm({
+            title: 'Eliminar instancia',
+            message: instanceName ? (
+                <>
+                    Se eliminará la instancia <strong>“{instanceName}”</strong> junto con su
+                    sesión de WhatsApp. Esta acción no se puede deshacer.
+                </>
+            ) : (
+                'Se eliminará la instancia junto con su sesión de WhatsApp. Esta acción no se puede deshacer.'
+            ),
+            confirmText: 'Eliminar',
+            cancelText: 'Cancelar',
+            severity: 'danger',
+        });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API request failed with status:', response.status, 'Response:', errorText);
-                    alert(`Error al eliminar la instancia: ${response.statusText}. Respuesta: ${errorText}`);
-                    return;
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(config.API_URL + '/session/del_ins', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + localStorage.getItem('token'),
+            },
+            body: JSON.stringify({
+                fecha: fechaHora,
+                auth: localStorage.getItem("token") || "",
+                accion: "Eliminar instancia",
+                data: {
+                    id: id
                 }
+            }),
+        });
 
-                setInstances((prev) => prev.filter((inst) => inst.id !== id));
-                alert('Instancia eliminada correctamente');
 
-            } catch (error) {
-                console.error('Error deleting instance:', error);
-                alert('Ocurrió un error al eliminar la instancia.');
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API request failed with status:', response.status, 'Response:', errorText);
+                notify.error('No se pudo eliminar la instancia. Intenta de nuevo.');
+                return;
             }
+
+            setInstances((prev) => prev.filter((inst) => inst.id !== id));
+            notify.success('Instancia eliminada correctamente');
+
+        } catch (error) {
+            console.error('Error deleting instance:', error);
+            notify.error('Ocurrió un error al eliminar la instancia.');
         }
     };
     

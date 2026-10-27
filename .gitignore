@@ -1,35 +1,4 @@
-# Node modules
-node_modules/
-
-# Build output
-dist/
-build/
-
-# Vite cache
-.vite/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-bun.lockb
-
-# Env files
+node_modules
+dist
 .env
-.env.*.local
-
-# Editor folders
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-
-# Optional: lock files if you're not committing them
-package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+.env.*

@@ -9,8 +9,12 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import config from "../config.json";
+import { useConfirm } from "../components/ConfirmProvider";
+import { useNotify } from "../components/NotificationProvider";
 
 export default function Broadcast() {
+  const confirm = useConfirm();
+  const notify = useNotify();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [phonebooks, setPhonebooks] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
@@ -86,7 +90,7 @@ export default function Broadcast() {
 
   const handleCreateCampaign = async () => {
     if (!title || !selectedTemplate || !selectedPhonebook || selectedInstances.length === 0) {
-      alert("Por favor llena todos los campos requeridos.");
+      notify.warning("Por favor llena todos los campos requeridos.");
       return;
     }
 
@@ -116,19 +120,33 @@ export default function Broadcast() {
       if (data.success) {
         setOpenAdd(false);
         loadData();
+        notify.success("Campaña creada correctamente.");
       } else {
-        alert(data.msg || "Error al crear la campaña");
+        notify.error(data.msg || "Error al crear la campaña");
       }
     } catch (error) {
       console.error(error);
-      alert("Error de conexión");
+      notify.error("Error de conexión");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (broadcast_id: string) => {
-    if (!window.confirm("¿Eliminar esta campaña?")) return;
+    const campaignTitle = campaigns.find((c) => c.broadcast_id === broadcast_id)?.title;
+    const confirmed = await confirm({
+      title: "Eliminar campaña",
+      message: campaignTitle ? (
+        <>
+          Se eliminará la campaña <strong>“{campaignTitle}”</strong>. Esta acción no se puede deshacer.
+        </>
+      ) : (
+        "Se eliminará la campaña. Esta acción no se puede deshacer."
+      ),
+      confirmText: "Eliminar",
+      severity: "danger",
+    });
+    if (!confirmed) return;
     try {
       const response = await fetch(`${config.API_URL}broadcast/del_broadcast`, {
         method: "POST",
@@ -138,9 +156,13 @@ export default function Broadcast() {
       const data = await response.json();
       if (data.success) {
         loadData();
+        notify.success("Campaña eliminada.");
+      } else {
+        notify.error(data.msg || "No se pudo eliminar la campaña.");
       }
     } catch (error) {
       console.error(error);
+      notify.error("Error de conexión");
     }
   };
 
